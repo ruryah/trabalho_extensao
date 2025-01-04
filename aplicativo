@@ -1,146 +1,146 @@
-// Import React and necessary components
+// Importar React e componentes necessários
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { LineChart } from 'react-native-chart-kit';
 
 const App = () => {
-  const [screen, setScreen] = useState('setup');
-  const [trainingType, setTrainingType] = useState('');
-  const [exercises, setExercises] = useState([]);
-  const [restDays, setRestDays] = useState('');
-  const [weeks, setWeeks] = useState('');
-  const [userData, setUserData] = useState({ weight: '', height: '', fat: '', muscle: '' });
-  const [initialData, setInitialData] = useState(null);
-  const [schedule, setSchedule] = useState([]);
+  const [tela, setTela] = useState('configuracao');
+  const [tipoTreino, setTipoTreino] = useState('');
+  const [exercicios, setExercicios] = useState([]);
+  const [diasDescanso, setDiasDescanso] = useState('');
+  const [semanas, setSemanas] = useState('');
+  const [dadosUsuario, setDadosUsuario] = useState({ peso: '', altura: '', gordura: '', musculo: '' });
+  const [dadosIniciais, setDadosIniciais] = useState(null);
+  const [cronograma, setCronograma] = useState([]);
 
-  const handleSetupComplete = () => {
-    const days = generateSchedule();
-    setSchedule(days);
-    setInitialData({ ...userData });
-    setScreen('schedule');
+  const handleConfiguracaoCompleta = () => {
+    const dias = gerarCronograma();
+    setCronograma(dias);
+    setDadosIniciais({ ...dadosUsuario });
+    setTela('cronograma');
   };
 
-  const generateSchedule = () => {
-    const days = [];
-    const currentDate = new Date();
-    const rest = parseInt(restDays, 10);
-    const totalDays = parseInt(weeks, 10) * 7;
-    const trainingOrder = trainingType.split('');
+  const gerarCronograma = () => {
+    const dias = [];
+    const dataAtual = new Date();
+    const descanso = parseInt(diasDescanso, 10);
+    const totalDias = parseInt(semanas, 10) * 7;
+    const ordemTreinos = tipoTreino.split('');
 
-    for (let i = 0; i < totalDays; i++) {
-      const date = new Date(currentDate);
-      date.setDate(currentDate.getDate() + i);
-      const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
-      const training = trainingOrder[i % trainingOrder.length];
+    for (let i = 0; i < totalDias; i++) {
+      const data = new Date(dataAtual);
+      data.setDate(dataAtual.getDate() + i);
+      const diaSemana = data.toLocaleDateString('pt-BR', { weekday: 'long' });
+      const treino = ordemTreinos[i % ordemTreinos.length];
 
-      days.push({
-        date: date.toLocaleDateString('en-US'),
-        dayOfWeek,
-        training,
+      dias.push({
+        data: data.toLocaleDateString('pt-BR'),
+        diaSemana,
+        treino,
       });
     }
-    return days;
+    return dias;
   };
 
-  const handleTrainingComplete = (index) => {
-    const updatedSchedule = [...schedule];
-    updatedSchedule[index].completed = true;
-    setSchedule(updatedSchedule);
+  const handleTreinoConcluido = (index) => {
+    const cronogramaAtualizado = [...cronograma];
+    cronogramaAtualizado[index].concluido = true;
+    setCronograma(cronogramaAtualizado);
   };
 
   return (
     <View style={styles.container}>
-      {screen === 'setup' && (
+      {tela === 'configuracao' && (
         <ScrollView>
-          <Text style={styles.title}>Setup Training Plan</Text>
+          <Text style={styles.title}>Configurar Cronograma de Treinos</Text>
 
           <TextInput
             style={styles.input}
-            placeholder="Training Type (e.g., AB, ABC)"
-            value={trainingType}
-            onChangeText={setTrainingType}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Rest Days (e.g., 2)"
-            keyboardType="numeric"
-            value={restDays}
-            onChangeText={setRestDays}
+            placeholder="Tipo de Treino (ex.: AB, ABC)"
+            value={tipoTreino}
+            onChangeText={setTipoTreino}
           />
 
           <TextInput
             style={styles.input}
-            placeholder="Weeks (e.g., 4)"
+            placeholder="Dias de Descanso (ex.: 2)"
             keyboardType="numeric"
-            value={weeks}
-            onChangeText={setWeeks}
+            value={diasDescanso}
+            onChangeText={setDiasDescanso}
           />
 
-          <Text style={styles.subtitle}>User Data</Text>
           <TextInput
             style={styles.input}
-            placeholder="Weight (kg)"
+            placeholder="Semanas (ex.: 4)"
             keyboardType="numeric"
-            value={userData.weight}
-            onChangeText={(value) => setUserData({ ...userData, weight: value })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Height (cm)"
-            keyboardType="numeric"
-            value={userData.height}
-            onChangeText={(value) => setUserData({ ...userData, height: value })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Body Fat (%)"
-            keyboardType="numeric"
-            value={userData.fat}
-            onChangeText={(value) => setUserData({ ...userData, fat: value })}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Muscle Mass (%)"
-            keyboardType="numeric"
-            value={userData.muscle}
-            onChangeText={(value) => setUserData({ ...userData, muscle: value })}
+            value={semanas}
+            onChangeText={setSemanas}
           />
 
-          <Button title="Complete Setup" onPress={handleSetupComplete} />
+          <Text style={styles.subtitle}>Dados do Usuário</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Peso (kg)"
+            keyboardType="numeric"
+            value={dadosUsuario.peso}
+            onChangeText={(value) => setDadosUsuario({ ...dadosUsuario, peso: value })}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Altura (cm)"
+            keyboardType="numeric"
+            value={dadosUsuario.altura}
+            onChangeText={(value) => setDadosUsuario({ ...dadosUsuario, altura: value })}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Gordura Corporal (%)"
+            keyboardType="numeric"
+            value={dadosUsuario.gordura}
+            onChangeText={(value) => setDadosUsuario({ ...dadosUsuario, gordura: value })}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Massa Muscular (%)"
+            keyboardType="numeric"
+            value={dadosUsuario.musculo}
+            onChangeText={(value) => setDadosUsuario({ ...dadosUsuario, musculo: value })}
+          />
+
+          <Button title="Concluir Configuração" onPress={handleConfiguracaoCompleta} />
         </ScrollView>
       )}
 
-      {screen === 'schedule' && (
+      {tela === 'cronograma' && (
         <View>
-          <Text style={styles.title}>Training Schedule</Text>
+          <Text style={styles.title}>Cronograma de Treinos</Text>
           <FlatList
-            data={schedule}
+            data={cronograma}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item, index }) => (
               <TouchableOpacity
                 style={styles.item}
-                onPress={() => handleTrainingComplete(index)}
+                onPress={() => handleTreinoConcluido(index)}
               >
-                <Text style={styles.itemText}>{`${item.date} (${item.dayOfWeek}) - ${item.training}`}</Text>
-                {item.completed && <Text style={styles.completed}>✔️ Completed</Text>}
+                <Text style={styles.itemText}>{`${item.data} (${item.diaSemana}) - ${item.treino}`}</Text>
+                {item.concluido && <Text style={styles.completed}>✔️ Concluído</Text>}
               </TouchableOpacity>
             )}
           />
         </View>
       )}
 
-      {screen === 'compare' && (
+      {tela === 'comparar' && (
         <View>
-          <Text style={styles.title}>Progress Comparison</Text>
+          <Text style={styles.title}>Comparação de Progresso</Text>
           <LineChart
             data={{
-              labels: ['Initial', 'Current'],
+              labels: ['Inicial', 'Atual'],
               datasets: [
-                { data: [initialData.weight, userData.weight] },
-                { data: [initialData.fat, userData.fat] },
-                { data: [initialData.muscle, userData.muscle] },
+                { data: [dadosIniciais.peso, dadosUsuario.peso] },
+                { data: [dadosIniciais.gordura, dadosUsuario.gordura] },
+                { data: [dadosIniciais.musculo, dadosUsuario.musculo] },
               ],
             }}
             width={320}
