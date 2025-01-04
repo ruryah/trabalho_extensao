@@ -1,0 +1,206 @@
+// Import React and necessary components
+import React, { useState } from 'react';
+import { View, Text, TextInput, Button, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
+import { LineChart } from 'react-native-chart-kit';
+
+const App = () => {
+  const [screen, setScreen] = useState('setup');
+  const [trainingType, setTrainingType] = useState('');
+  const [exercises, setExercises] = useState([]);
+  const [restDays, setRestDays] = useState('');
+  const [weeks, setWeeks] = useState('');
+  const [userData, setUserData] = useState({ weight: '', height: '', fat: '', muscle: '' });
+  const [initialData, setInitialData] = useState(null);
+  const [schedule, setSchedule] = useState([]);
+
+  const handleSetupComplete = () => {
+    const days = generateSchedule();
+    setSchedule(days);
+    setInitialData({ ...userData });
+    setScreen('schedule');
+  };
+
+  const generateSchedule = () => {
+    const days = [];
+    const currentDate = new Date();
+    const rest = parseInt(restDays, 10);
+    const totalDays = parseInt(weeks, 10) * 7;
+    const trainingOrder = trainingType.split('');
+
+    for (let i = 0; i < totalDays; i++) {
+      const date = new Date(currentDate);
+      date.setDate(currentDate.getDate() + i);
+      const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long' });
+      const training = trainingOrder[i % trainingOrder.length];
+
+      days.push({
+        date: date.toLocaleDateString('en-US'),
+        dayOfWeek,
+        training,
+      });
+    }
+    return days;
+  };
+
+  const handleTrainingComplete = (index) => {
+    const updatedSchedule = [...schedule];
+    updatedSchedule[index].completed = true;
+    setSchedule(updatedSchedule);
+  };
+
+  return (
+    <View style={styles.container}>
+      {screen === 'setup' && (
+        <ScrollView>
+          <Text style={styles.title}>Setup Training Plan</Text>
+
+          <TextInput
+            style={styles.input}
+            placeholder="Training Type (e.g., AB, ABC)"
+            value={trainingType}
+            onChangeText={setTrainingType}
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Rest Days (e.g., 2)"
+            keyboardType="numeric"
+            value={restDays}
+            onChangeText={setRestDays}
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Weeks (e.g., 4)"
+            keyboardType="numeric"
+            value={weeks}
+            onChangeText={setWeeks}
+          />
+
+          <Text style={styles.subtitle}>User Data</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Weight (kg)"
+            keyboardType="numeric"
+            value={userData.weight}
+            onChangeText={(value) => setUserData({ ...userData, weight: value })}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Height (cm)"
+            keyboardType="numeric"
+            value={userData.height}
+            onChangeText={(value) => setUserData({ ...userData, height: value })}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Body Fat (%)"
+            keyboardType="numeric"
+            value={userData.fat}
+            onChangeText={(value) => setUserData({ ...userData, fat: value })}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Muscle Mass (%)"
+            keyboardType="numeric"
+            value={userData.muscle}
+            onChangeText={(value) => setUserData({ ...userData, muscle: value })}
+          />
+
+          <Button title="Complete Setup" onPress={handleSetupComplete} />
+        </ScrollView>
+      )}
+
+      {screen === 'schedule' && (
+        <View>
+          <Text style={styles.title}>Training Schedule</Text>
+          <FlatList
+            data={schedule}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity
+                style={styles.item}
+                onPress={() => handleTrainingComplete(index)}
+              >
+                <Text style={styles.itemText}>{`${item.date} (${item.dayOfWeek}) - ${item.training}`}</Text>
+                {item.completed && <Text style={styles.completed}>✔️ Completed</Text>}
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      )}
+
+      {screen === 'compare' && (
+        <View>
+          <Text style={styles.title}>Progress Comparison</Text>
+          <LineChart
+            data={{
+              labels: ['Initial', 'Current'],
+              datasets: [
+                { data: [initialData.weight, userData.weight] },
+                { data: [initialData.fat, userData.fat] },
+                { data: [initialData.muscle, userData.muscle] },
+              ],
+            }}
+            width={320}
+            height={220}
+            chartConfig={{
+              backgroundColor: '#f3f3f3',
+              backgroundGradientFrom: '#add8e6',
+              backgroundGradientTo: '#ffe4b5',
+              color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+            }}
+          />
+        </View>
+      )}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f3f3f3',
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    fontFamily: 'consolas',
+    color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    marginBottom: 15,
+    borderRadius: 5,
+    backgroundColor: '#fff',
+    fontFamily: 'consolas',
+  },
+  subtitle: {
+    fontSize: 18,
+    marginBottom: 10,
+    fontFamily: 'consolas',
+  },
+  item: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  itemText: {
+    fontSize: 16,
+    fontFamily: 'consolas',
+  },
+  completed: {
+    color: 'green',
+    fontSize: 14,
+    fontFamily: 'consolas',
+  },
+});
+
+export default App;
