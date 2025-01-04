@@ -7,12 +7,29 @@ import { LineChart } from 'react-native-chart-kit';
 const App = () => {
   const [tela, setTela] = useState('configuracao');
   const [tipoTreino, setTipoTreino] = useState('');
-  const [exercicios, setExercicios] = useState([]);
+  const [exercicios, setExercicios] = useState({});
+  const [novoExercicio, setNovoExercicio] = useState('');
+  const [treinoAtual, setTreinoAtual] = useState('');
   const [diasDescanso, setDiasDescanso] = useState('');
   const [semanas, setSemanas] = useState('');
   const [dadosUsuario, setDadosUsuario] = useState({ peso: '', altura: '', gordura: '', musculo: '' });
   const [dadosIniciais, setDadosIniciais] = useState(null);
   const [cronograma, setCronograma] = useState([]);
+  const [exerciciosTreinoAtual, setExerciciosTreinoAtual] = useState([]);
+
+  const adicionarExercicio = () => {
+    if (treinoAtual && novoExercicio) {
+      setExercicios((prevExercicios) => {
+        const atualizados = { ...prevExercicios };
+        if (!atualizados[treinoAtual]) {
+          atualizados[treinoAtual] = [];
+        }
+        atualizados[treinoAtual].push(novoExercicio);
+        return atualizados;
+      });
+      setNovoExercicio('');
+    }
+  };
 
   const handleConfiguracaoCompleta = () => {
     const dias = gerarCronograma();
@@ -49,6 +66,11 @@ const App = () => {
     setCronograma(cronogramaAtualizado);
   };
 
+  const handleExibirExercicios = (treino) => {
+    setExerciciosTreinoAtual(exercicios[treino] || []);
+    setTela('exercicios');
+  };
+
   return (
     <View style={styles.container}>
       {tela === 'configuracao' && (
@@ -76,6 +98,36 @@ const App = () => {
             keyboardType="numeric"
             value={semanas}
             onChangeText={setSemanas}
+          />
+
+          <Text style={styles.subtitle}>Exercícios por Treino</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Treino Atual (ex.: A, B, C)"
+            value={treinoAtual}
+            onChangeText={setTreinoAtual}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Novo Exercício"
+            value={novoExercicio}
+            onChangeText={setNovoExercicio}
+          />
+          <Button title="Adicionar Exercício" onPress={adicionarExercicio} />
+
+          <FlatList
+            data={Object.keys(exercicios)}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <View style={styles.exerciseList}>
+                <Text style={styles.subtitle}>{`Treino ${item}`}</Text>
+                <FlatList
+                  data={exercicios[item]}
+                  keyExtractor={(subItem, index) => `${item}-${index}`}
+                  renderItem={({ item: subItem }) => <Text style={styles.itemText}>{subItem}</Text>}
+                />
+              </View>
+            )}
           />
 
           <Text style={styles.subtitle}>Dados do Usuário</Text>
@@ -121,13 +173,25 @@ const App = () => {
             renderItem={({ item, index }) => (
               <TouchableOpacity
                 style={styles.item}
-                onPress={() => handleTreinoConcluido(index)}
+                onPress={() => handleExibirExercicios(item.treino)}
               >
                 <Text style={styles.itemText}>{`${item.data} (${item.diaSemana}) - ${item.treino}`}</Text>
                 {item.concluido && <Text style={styles.completed}>✔️ Concluído</Text>}
               </TouchableOpacity>
             )}
           />
+        </View>
+      )}
+
+      {tela === 'exercicios' && (
+        <View>
+          <Text style={styles.title}>Exercícios do Treino</Text>
+          <FlatList
+            data={exerciciosTreinoAtual}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item }) => <Text style={styles.itemText}>{item}</Text>}
+          />
+          <Button title="Voltar" onPress={() => setTela('cronograma')} />
         </View>
       )}
 
@@ -200,6 +264,9 @@ const styles = StyleSheet.create({
     color: 'green',
     fontSize: 14,
     fontFamily: 'consolas',
+  },
+  exerciseList: {
+    marginBottom: 20,
   },
 });
 
